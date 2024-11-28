@@ -30,19 +30,9 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		A5157DD12CF530AB00B9AC4F /* csfair2024 */ = {
+		A5157DD12CF530AB00B9AC4F /* HabitTracker */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			path = csfair2024;
-			sourceTree = "<group>";
-		};
-		A5157DE22CF530AC00B9AC4F /* csfair2024Tests */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = csfair2024Tests;
-			sourceTree = "<group>";
-		};
-		A5157DEC2CF530AC00B9AC4F /* csfair2024UITests */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = csfair2024UITests;
+			path = HabitTracker;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -75,9 +65,7 @@
 		A5157DC62CF530AB00B9AC4F = {
 			isa = PBXGroup;
 			children = (
-				A5157DD12CF530AB00B9AC4F /* csfair2024 */,
-				A5157DE22CF530AC00B9AC4F /* csfair2024Tests */,
-				A5157DEC2CF530AC00B9AC4F /* csfair2024UITests */,
+				A5157DD12CF530AB00B9AC4F /* HabitTracker */,
 				A5157DD02CF530AB00B9AC4F /* Products */,
 			);
 			sourceTree = "<group>";
@@ -108,7 +96,7 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				A5157DD12CF530AB00B9AC4F /* csfair2024 */,
+				A5157DD12CF530AB00B9AC4F /* HabitTracker */,
 			);
 			name = csfair2024;
 			packageProductDependencies = (
@@ -130,9 +118,6 @@
 			dependencies = (
 				A5157DE12CF530AC00B9AC4F /* PBXTargetDependency */,
 			);
-			fileSystemSynchronizedGroups = (
-				A5157DE22CF530AC00B9AC4F /* csfair2024Tests */,
-			);
 			name = csfair2024Tests;
 			packageProductDependencies = (
 			);
@@ -152,9 +137,6 @@
 			);
 			dependencies = (
 				A5157DEB2CF530AC00B9AC4F /* PBXTargetDependency */,
-			);
-			fileSystemSynchronizedGroups = (
-				A5157DEC2CF530AC00B9AC4F /* csfair2024UITests */,
 			);
 			name = csfair2024UITests;
 			packageProductDependencies = (
@@ -186,7 +168,7 @@
 					};
 				};
 			};
-			buildConfigurationList = A5157DCA2CF530AB00B9AC4F /* Build configuration list for PBXProject "csfair2024" */;
+			buildConfigurationList = A5157DCA2CF530AB00B9AC4F /* Build configuration list for PBXProject "HabitTracker" */;
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -515,7 +497,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		A5157DCA2CF530AB00B9AC4F /* Build configuration list for PBXProject "csfair2024" */ = {
+		A5157DCA2CF530AB00B9AC4F /* Build configuration list for PBXProject "HabitTracker" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				A5157DF12CF530AC00B9AC4F /* Debug */,
