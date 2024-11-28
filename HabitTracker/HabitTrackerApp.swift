@@ -1,6 +1,6 @@
 //
-//  csfair2024App.swift
-//  csfair2024
+//  HabitTrackerApp.swift
+//  HabitTracker
 //
 //  Created by Ehan Haque on 11/25/24.
 //
@@ -8,7 +8,7 @@
 import SwiftUI
 
 @main
-struct csfair2024App: App {
+struct HabitTrackerApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()

@@ -1,6 +1,6 @@
 //
 //  ContentView.swift
-//  csfair2024
+//  HabitTracker
 //
 //  Created by Ehan Haque on 11/25/24.
 //
