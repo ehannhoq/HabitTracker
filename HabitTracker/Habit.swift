@@ -6,25 +6,37 @@
 //
 
 import Foundation
+import SwiftUI
 
-enum HabitImportance {
-    case Low, Medium, High
+enum FrequencyType : String {
+    case Daily = "Daily"
+    case Weekly = "Weekly"
 }
 
-class Habit {
-    private(set) var name: String
-    private(set) var importance: HabitImportance
-    private(set) var frequency: Int
-    private(set) var completed: Bool
+class Habit: ObservableObject, Identifiable {
+    let id = UUID()
+    @Published var name: String
+    @Published var frequency: Int
+    @Published var frequencyType: FrequencyType
+    @Published var completedBools: [Bool]
     
-    init(name: String, importance: HabitImportance, frequency: Int, completed: Bool) {
+    init(name: String, frequency: Int, frequencyType: FrequencyType) {
         self.name = name
-        self.importance = importance
         self.frequency = frequency
-        self.completed = completed
+        self.frequencyType = frequencyType
+        self.completedBools = Array(repeating: false, count: frequency)
     }
     
-    func toggleCompleted() {
-        completed.toggle()
+    func toggleCompletion(forIndex index: Int)
+    {
+        completedBools[index].toggle()
+        objectWillChange.send()
+    }
+}
+class ListOfHabits: ObservableObject {
+    @Published var habits: [Habit] = []
+    init(habits: [Habit])
+    {
+        self.habits = habits
     }
 }
