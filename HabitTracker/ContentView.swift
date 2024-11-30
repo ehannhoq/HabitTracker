@@ -15,8 +15,8 @@ enum Page {
 
 
 struct ContentView: View {
-    @State private var currentPage: Page = .mainPage
-    @StateObject private var nyabit: Nyabit = Nyabit()
+    @State private var currentPage: Page = .habitList
+    @StateObject private var nyabit: Nyabit = Nyabit(name: "Carl")
     @StateObject private var habitList: ListOfHabits = ListOfHabits(
         habits: [
             Habit(name: "Exercise", frequency: 4, frequencyType: FrequencyType.Weekly),
@@ -67,10 +67,26 @@ struct MainPage: View {
                     .bold()
                     Spacer()
                 }
-
-                Text(nyabit.name)
-                    .padding(.top, 140)
-                    .font(.system(size: 28))
+                
+                GeometryReader { geometry in
+                    TextField("", text: Binding(
+                        get: { nyabit.name },
+                        set: {
+                            var name = $0
+                            if name == "" {
+                                name = "Nyabit"
+                            }
+                            nyabit.name = name
+                        }
+                    ))
+                        .padding(.top, 140)
+                        .font(.system(size: 28))
+                        .frame(width: geometry.size.width)
+                        .multilineTextAlignment(.center)
+                }
+                .frame(height: 170)
+         
+                
                 nyabit.getEmotion()
                     .font(.system(size: 20))
                     .padding(.bottom, 32)
@@ -93,50 +109,68 @@ struct MainPage: View {
                 Text("Today")
                 .font(.title)
                 
-                ForEach (dailyTasks) { habit in
-                    HStack {
-                        Text(habit.name)
-                            .font(.title2)
-                        Spacer()
-                        
-                        ForEach (habit.completedBools.indices, id: \.self) { i in
-                            Button(action: {
-                                habit.toggleCompletion(forIndex: i)
-                                habitList.updateHabits(at: i, with: habit)
-                            }) {
-                                Circle()
-                                    .fill(habit.completedBools[i] ? Color.green : Color.gray)
-                                    .frame(width: 20, height: 20)
-                                    .animation(.easeInOut, value: habit.completedBools[i])
+                if (!dailyTasks.isEmpty)
+                {
+                    ForEach (dailyTasks) { habit in
+                        HStack {
+                            Text(habit.name)
+                                .font(.title2)
+                            Spacer()
+                            ForEach (habit.completedBools.indices, id: \.self) { i in
+                                Button(action: {
+                                    habit.toggleCompletion(forIndex: i)
+                                    habitList.updateHabits()
+                                }) {
+                                    Circle()
+                                        .fill(habit.completedBools[i] ? Color.green : Color.gray)
+                                        .frame(width: 20, height: 20)
+                                        .animation(.easeInOut, value: habit.completedBools[i])
+                                }
                             }
                         }
+                    }
+                } else {
+                    HStack {
+                        Text("You have no daily Nyabits.")
+                            .font(.subheadline)
+                        Spacer()
                     }
                 }
             }
             .padding(.horizontal, 32)
             .padding(.bottom, 64)
             
+            
+            
             VStack (alignment: .leading, spacing: 16){
                 Text("This Week")
                     .font(.title)
                 
-                ForEach (weeklyTasks) { habit in
-                    HStack {
-                        Text(habit.name)
-                            .font(.title2)
-                        Spacer()
-                        
-                        ForEach (habit.completedBools.indices, id: \.self) { i in
-                            Button(action: {
-                                habit.toggleCompletion(forIndex: i)
-                                habitList.updateHabits(at: i, with: habit)
-                            }) {
-                                Circle()
-                                    .fill(habit.completedBools[i] ? Color.green : Color.gray)
-                                    .frame(width: 20, height: 20)
-                                    .animation(.easeInOut, value: habit.completedBools[i])
+                if (!weeklyTasks.isEmpty) {
+                    ForEach (weeklyTasks) { habit in
+                        HStack {
+                            Text(habit.name)
+                                .font(.title2)
+                            Spacer()
+                            
+                            ForEach (habit.completedBools.indices, id: \.self) { i in
+                                Button(action: {
+                                    habit.toggleCompletion(forIndex: i)
+                                    habitList.updateHabits()
+                                }) {
+                                    Circle()
+                                        .fill(habit.completedBools[i] ? Color.green : Color.gray)
+                                        .frame(width: 20, height: 20)
+                                        .animation(.easeInOut, value: habit.completedBools[i])
+                                }
                             }
                         }
+                    }
+                } else {
+                    HStack {
+                        Text("You have no weekly Nyabits.")
+                            .font(.subheadline)
+                        Spacer()
                     }
                 }
             }
@@ -151,9 +185,7 @@ struct MainPage: View {
 struct HabitList: View {
     @Binding var currentPage: Page
     @ObservedObject var habits: ListOfHabits
-
     var body: some View {
-        
         VStack {
             HStack {
                 Spacer()
@@ -161,26 +193,75 @@ struct HabitList: View {
                     currentPage = .mainPage
                 }) {
                     Text("Back")
-                        .padding()
                         .foregroundStyle(.gray)
                 }
-
+                
             }
-            .padding()
+            .padding(32)
             
-            NavigationStack {
-                List(habits.habits, id: \.name) { habit in
-                    HStack {
-                        Text(habit.name)
-                        Spacer()
-                        Text(habit.frequencyType.rawValue)
-
+            HStack {
+                Text("Name")
+                Spacer()
+                Text("Frequency")
+                Spacer()
+                Spacer()
+            }
+            .padding(.horizontal, 32)
+            ScrollView {
+                VStack (alignment: .center, spacing: 32){
+                    ForEach (habits.habits) { habit in
+                        HStack {
+                            TextField("My Nyabit", text: Binding (
+                                get: { habit.name },
+                                set: { habit.name = $0 }
+                            )
+                            )
+                            .textFieldStyle(RoundedBorderTextFieldStyle())
+                            .frame(width: 100)
+                            
+                            
+                            TextField("Frequency", text: Binding (
+                                get: { String(habit.frequency) },
+                                set: {
+                                    var value = Int($0) ?? 0
+                                    
+                                    if value > 7 { value = 7 }
+                                    
+                                    habit.frequency = value
+                                    habit.updateHabit()
+                                }
+                            ))
+                            .frame(width: 100)
+                            
+                            Picker(habit.frequencyType.rawValue, selection: Binding (
+                                get: { habit.frequencyType},
+                                set: { habit.frequencyType = $0}
+                            )) {
+                                Text("Daily").tag(FrequencyType.Daily)
+                                Text("Weekly").tag(FrequencyType.Weekly)
+                            }
+                            .pickerStyle(.palette)
+                        }
+                        .padding(.horizontal, 32)
                     }
                 }
+                .navigationTitle("Habits")
+                .navigationBarHidden(true)
             }
+            
+            HStack {
+                Spacer()
+                Button(action: {
+                    habits.habits.append(Habit())
+                }) {
+                    Image(systemName: "plus")
+                        .imageScale(.large)
+                }
+                
+            }
+            .padding(.horizontal, 32)
+            .offset(x: -30)
         }
-        .navigationTitle("Habits")
-        .navigationBarHidden(true)
     }
 }
 

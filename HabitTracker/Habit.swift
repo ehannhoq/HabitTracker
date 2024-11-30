@@ -20,7 +20,7 @@ class Habit: ObservableObject, Identifiable {
     @Published var frequencyType: FrequencyType
     @Published var completedBools: [Bool]
     
-    init(name: String, frequency: Int, frequencyType: FrequencyType) {
+    init(name: String = "New Nyabit", frequency: Int = 1, frequencyType: FrequencyType = .Daily) {
         self.name = name
         self.frequency = frequency
         self.frequencyType = frequencyType
@@ -32,6 +32,10 @@ class Habit: ObservableObject, Identifiable {
         completedBools[index].toggle()
         objectWillChange.send()
     }
+    
+    func updateHabit() {
+        self.completedBools = Array(repeating: false, count: frequency)
+    }
 }
 class ListOfHabits: ObservableObject {
     @Published var habits: [Habit] = []
@@ -40,7 +44,7 @@ class ListOfHabits: ObservableObject {
         self.habits = habits
     }
     
-    func updateHabits(at index: Int, with habit: Habit) {
+    func updateHabits() {
         let list = habits
         habits = list
     }
