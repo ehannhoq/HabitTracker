@@ -15,14 +15,14 @@ enum Page {
 
 
 struct ContentView: View {
-    @State private var currentPage: Page = .habitList
+    @State private var currentPage: Page = .mainPage
     @StateObject private var nyabit: Nyabit = Nyabit(name: "Carl")
     @StateObject private var habitList: ListOfHabits = ListOfHabits(
         habits: [
-            Habit(name: "Exercise", frequency: 4, frequencyType: FrequencyType.Weekly),
-            Habit(name: "Meditate", frequency: 1, frequencyType: FrequencyType.Daily),
-            Habit(name: "Work", frequency: 7, frequencyType: FrequencyType.Weekly),
-            Habit(name: "Read", frequency: 2, frequencyType: FrequencyType.Daily)
+            Habit(name: "Exercise", frequency: 4, frequencyType: .Daily),
+            Habit(name: "Meditate", frequency: 1, frequencyType: .Daily),
+            Habit(name: "Work", frequency: 9, frequencyType: .Daily),
+            Habit(name: "Read", frequency: 2, frequencyType: .Daily)
             ]
         )
     
@@ -95,6 +95,7 @@ struct MainPage: View {
                     .font(.system(size: 100))
                 Spacer()
                 Spacer()
+    
             }
             .padding(.horizontal, 32)
             .padding(.top, 32)
@@ -102,80 +103,7 @@ struct MainPage: View {
             .navigationTitle("Main Page")
             .navigationBarHidden(true)
             
-            let dailyTasks = habitList.habits.filter { $0.frequencyType == .Daily}
-            let weeklyTasks = habitList.habits.filter { $0.frequencyType == .Weekly}
-            
-            VStack(alignment: .leading, spacing: 16) {
-                Text("Today")
-                .font(.title)
-                
-                if (!dailyTasks.isEmpty)
-                {
-                    ForEach (dailyTasks) { habit in
-                        HStack {
-                            Text(habit.name)
-                                .font(.title2)
-                            Spacer()
-                            ForEach (habit.completedBools.indices, id: \.self) { i in
-                                Button(action: {
-                                    habit.toggleCompletion(forIndex: i)
-                                    habitList.updateHabits()
-                                }) {
-                                    Circle()
-                                        .fill(habit.completedBools[i] ? Color.green : Color.gray)
-                                        .frame(width: 20, height: 20)
-                                        .animation(.easeInOut, value: habit.completedBools[i])
-                                }
-                            }
-                        }
-                    }
-                } else {
-                    HStack {
-                        Text("You have no daily Nyabits.")
-                            .font(.subheadline)
-                        Spacer()
-                    }
-                }
-            }
-            .padding(.horizontal, 32)
-            .padding(.bottom, 64)
-            
-            
-            
-            VStack (alignment: .leading, spacing: 16){
-                Text("This Week")
-                    .font(.title)
-                
-                if (!weeklyTasks.isEmpty) {
-                    ForEach (weeklyTasks) { habit in
-                        HStack {
-                            Text(habit.name)
-                                .font(.title2)
-                            Spacer()
-                            
-                            ForEach (habit.completedBools.indices, id: \.self) { i in
-                                Button(action: {
-                                    habit.toggleCompletion(forIndex: i)
-                                    habitList.updateHabits()
-                                }) {
-                                    Circle()
-                                        .fill(habit.completedBools[i] ? Color.green : Color.gray)
-                                        .frame(width: 20, height: 20)
-                                        .animation(.easeInOut, value: habit.completedBools[i])
-                                }
-                            }
-                        }
-                    }
-                } else {
-                    HStack {
-                        Text("You have no weekly Nyabits.")
-                            .font(.subheadline)
-                        Spacer()
-                    }
-                }
-            }
-            .padding(.horizontal, 32)
-            .padding(.bottom, 256)
+            MainPageHabits(habitList: habitList)
         }
         .defaultScrollAnchor(.top)
 
@@ -207,6 +135,7 @@ struct HabitList: View {
                 Spacer()
             }
             .padding(.horizontal, 32)
+            .padding(.bottom, 16)
             ScrollView {
                 VStack (alignment: .center, spacing: 32){
                     ForEach (habits.habits) { habit in
@@ -223,10 +152,7 @@ struct HabitList: View {
                             TextField("Frequency", text: Binding (
                                 get: { String(habit.frequency) },
                                 set: {
-                                    var value = Int($0) ?? 0
-                                    
-                                    if value > 7 { value = 7 }
-                                    
+                                    let value = Int($0) ?? 0
                                     habit.frequency = value
                                     habit.updateHabit()
                                 }
@@ -294,7 +220,99 @@ struct InitializeNyabit: View {
     }
 }
 
-
+struct MainPageHabits: View  {
+    @ObservedObject var habitList: ListOfHabits
+    
+    var body: some View {
+        let dailyTasks = habitList.habits.filter { $0.frequencyType == .Daily}
+        let weeklyTasks = habitList.habits.filter { $0.frequencyType == .Weekly}
+        let maxBoolsPerRow: Int = 5
+        
+        VStack(alignment: .leading, spacing: 16) {
+            Text("Today")
+            .font(.title)
+            
+            if (!dailyTasks.isEmpty)
+            {
+                ForEach (dailyTasks) { habit in
+                    HStack {
+                        Text(habit.name)
+                            .font(.title2)
+                        Spacer()
+                        
+                        LazyVGrid(columns: Array(repeating: GridItem(.fixed(24)), count: maxBoolsPerRow),
+                                  spacing: 16
+                        ) {
+                            ForEach (habit.completedBools.indices, id: \.self) { i in
+                                Button(action: {
+                                    habit.toggleCompletion(forIndex: i)
+                                    habitList.updateHabits()
+                                }) {
+                                    Circle()
+                                        .fill(habit.completedBools[i] ? Color.green : Color.gray)
+                                        .frame(width: 20, height: 20)
+                                        .animation(.easeInOut, value: habit.completedBools[i])
+                                }
+                            }
+                            Spacer()
+                        }
+                        
+                    }
+                }
+            } else {
+                HStack {
+                    Text("You have no daily Nyabits.")
+                        .font(.subheadline)
+                    Spacer()
+                }
+            }
+        }
+        .padding(.horizontal, 32)
+        .padding(.bottom, 64)
+        
+        
+        
+        VStack (alignment: .leading, spacing: 16) {
+            Text("This Week")
+                .font(.title)
+            
+            if (!weeklyTasks.isEmpty) {
+                ForEach (weeklyTasks) { habit in
+                    HStack {
+                        Text(habit.name)
+                            .font(.title2)
+                        Spacer()
+                        
+                        LazyVGrid(columns: Array(repeating: GridItem(.fixed(24)), count: maxBoolsPerRow),
+                                  spacing: 16
+                        ) {
+                            ForEach (habit.completedBools.indices, id: \.self) { i in
+                                Button(action: {
+                                    habit.toggleCompletion(forIndex: i)
+                                    habitList.updateHabits()
+                                }) {
+                                    Circle()
+                                        .fill(habit.completedBools[i] ? Color.green : Color.gray)
+                                        .frame(width: 20, height: 20)
+                                        .animation(.easeInOut, value: habit.completedBools[i])
+                                }
+                            }
+                            Spacer()
+                        }
+                    }
+                }
+            } else {
+                HStack {
+                    Text("You have no weekly Nyabits.")
+                        .font(.subheadline)
+                    Spacer()
+                }
+            }
+        }
+        .padding(.horizontal, 32)
+        .padding(.bottom, 256)
+    }
+}
 
 
 #Preview {
