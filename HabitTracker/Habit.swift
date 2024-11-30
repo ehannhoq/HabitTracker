@@ -39,4 +39,9 @@ class ListOfHabits: ObservableObject {
     {
         self.habits = habits
     }
+    
+    func updateHabits(at index: Int, with habit: Habit) {
+        let list = habits
+        habits = list
+    }
 }

@@ -79,11 +79,7 @@ struct MainPage: View {
             let dailyTasks = habitList.habits.filter { $0.frequencyType == .Daily}
             let weeklyTasks = habitList.habits.filter { $0.frequencyType == .Weekly}
             
-            
-            
-            // TODO: SwiftUI is not immedietly updating a task is completed, but will update if the user switches to the Habits tab then back.
-            
-            VStack {
+            VStack(alignment: .leading, spacing: 16) {
                 HStack {
                     Text("Daily Tasks")
                     Spacer()
@@ -99,11 +95,12 @@ struct MainPage: View {
                         ForEach (habit.completedBools.indices, id: \.self) { i in
                             Button(action: {
                                 habit.toggleCompletion(forIndex: i)
-                                print(habit.completedBools)
+                                habitList.updateHabits(at: i, with: habit)
                             }) {
                                 Circle()
-                                    .fill(habit.completedBools[i] ? Color.green : Color.red)
+                                    .fill(habit.completedBools[i] ? Color.green : Color.gray)
                                     .frame(width: 20, height: 20)
+                                    .animation(.easeInOut, value: habit.completedBools[i])
                             }
                         }
                     }
@@ -118,7 +115,7 @@ struct MainPage: View {
                 }
                 .font(.title)
                 
-                ForEach (weeklyTasks) { habit in // TODO: Fix the ForEach as they do not properly update the booleans as well as the UI.
+                ForEach (weeklyTasks) { habit in
                     HStack {
                         Text(habit.name)
                             .font(.title2)
@@ -127,11 +124,12 @@ struct MainPage: View {
                         ForEach (habit.completedBools.indices, id: \.self) { i in
                             Button(action: {
                                 habit.toggleCompletion(forIndex: i)
-                                print(habit.completedBools)
+                                habitList.updateHabits(at: i, with: habit)
                             }) {
                                 Circle()
-                                    .fill(habit.completedBools[i] ? Color.green : Color.red)
+                                    .fill(habit.completedBools[i] ? Color.green : Color.gray)
                                     .frame(width: 20, height: 20)
+                                    .animation(.easeInOut, value: habit.completedBools[i])
                             }
                         }
                     }
