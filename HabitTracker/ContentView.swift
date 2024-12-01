@@ -15,7 +15,7 @@ enum Page {
 
 
 struct ContentView: View {
-    @State private var currentPage: Page = .mainPage
+    @State private var currentPage: Page = .habitList
     @StateObject private var nyabit: Nyabit = Nyabit(name: "Carl")
     @StateObject private var habitList: ListOfHabits = ListOfHabits(
         habits: [
@@ -37,7 +37,7 @@ struct ContentView: View {
                 MainPage(currentPage: $currentPage, nyabit: nyabit, habitList: habitList)
                     .transition(.move(edge: .trailing))
             case .habitList:
-                HabitList(currentPage: $currentPage, habits: habitList)
+                HabitList(currentPage: $currentPage, habitList: habitList)
                     .transition(.move(edge: .leading))
             case .initNyabit:
                 InitializeNyabit(currentPage: $currentPage, nyabit: nyabit)
@@ -112,10 +112,22 @@ struct MainPage: View {
 
 struct HabitList: View {
     @Binding var currentPage: Page
-    @ObservedObject var habits: ListOfHabits
+    @ObservedObject var habitList: ListOfHabits
+    @State private var isEditing: Bool = false
+    
+    var editText: String {
+        isEditing ? "Done" : "Edit"
+    }
+    
     var body: some View {
         VStack {
             HStack {
+                Button(action: {
+                    isEditing.toggle()
+                }) {
+                    Text(editText)
+                }
+                .animation(.easeInOut, value: isEditing)
                 Spacer()
                 Button(action: {
                     currentPage = .mainPage
@@ -137,9 +149,21 @@ struct HabitList: View {
             .padding(.horizontal, 32)
             .padding(.bottom, 16)
             ScrollView {
-                VStack (alignment: .center, spacing: 32){
-                    ForEach (habits.habits) { habit in
+                VStack (alignment: .center, spacing: 32) {
+                    ForEach (Array(habitList.habits.indices), id: \.self) { i in
+                        let habit = habitList.habits[i]
                         HStack {
+                            
+                            if isEditing {
+                                Button(action: {
+                                    habitList.habits.remove(at: i)
+                                    habitList.updateHabits()
+                                }) {
+                                    Image(systemName: "trash")
+                                        .foregroundStyle(.red)
+                                }
+                            }
+                            
                             TextField("My Nyabit", text: Binding (
                                 get: { habit.name },
                                 set: { habit.name = $0 }
@@ -178,15 +202,15 @@ struct HabitList: View {
             HStack {
                 Spacer()
                 Button(action: {
-                    habits.habits.append(Habit())
+                    habitList.habits.append(Habit())
                 }) {
                     Image(systemName: "plus")
                         .imageScale(.large)
                 }
-                
             }
-            .padding(.horizontal, 32)
-            .offset(x: -30)
+            .padding(.horizontal, 48)
+            .padding(.vertical, 24)
+            
         }
     }
 }
