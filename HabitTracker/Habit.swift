@@ -7,20 +7,17 @@
 
 import Foundation
 import SwiftUI
+import SwiftData
 
-enum FrequencyType : String {
-    case Daily = "Daily"
-    case Weekly = "Weekly"
-}
-
-class Habit: ObservableObject, Identifiable {
-    let id = UUID()
-    @Published var name: String
-    @Published var frequency: Int
-    @Published var frequencyType: FrequencyType
-    @Published var completedBools: [Bool]
+@Model
+class Habit: Identifiable {
+    var id = UUID()
+    var name: String
+    var frequency: Int
+    var frequencyType: String
+    var completedBools: [Bool]
     
-    init(name: String = "New Nyabit", frequency: Int = 1, frequencyType: FrequencyType = .Daily) {
+    init(name: String = "New Nyabit", frequency: Int = 1, frequencyType: String = "daily") {
         self.name = name
         self.frequency = frequency
         self.frequencyType = frequencyType
@@ -30,22 +27,9 @@ class Habit: ObservableObject, Identifiable {
     func toggleCompletion(forIndex index: Int)
     {
         completedBools[index].toggle()
-        objectWillChange.send()
     }
     
     func updateHabit() {
         self.completedBools = Array(repeating: false, count: frequency)
-    }
-}
-class ListOfHabits: ObservableObject {
-    @Published var habits: [Habit] = []
-    init(habits: [Habit])
-    {
-        self.habits = habits
-    }
-    
-    func updateHabits() {
-        let list = habits
-        habits = list
     }
 }
