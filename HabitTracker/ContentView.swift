@@ -275,7 +275,12 @@ struct MainPageHabits: View  {
     var body: some View {
         let maxBoolsPerRow: Int = 5
         let dailyTasks = habits.filter { $0.frequencyType == "daily"}
+            .sorted { $0.name.localizedCompare($1.name) == .orderedAscending }
         let weeklyTasks = habits.filter { $0.frequencyType == "weekly"}
+            .sorted { $0.name.localizedCompare($1.name) == .orderedAscending }
+
+        
+        
         
         VStack(alignment: .leading, spacing: 16) {
             Text("Today")
