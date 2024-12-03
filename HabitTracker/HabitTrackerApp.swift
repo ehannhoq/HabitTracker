@@ -10,10 +10,27 @@ import SwiftData
 
 @main
 struct HabitTrackerApp: App {
+    @StateObject private var nyabitStore = NyabitStore()
+    
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            ContentView(nyabit: $nyabitStore.nyabit) {
+                Task {
+                    do {
+                        try await nyabitStore.save(nyabit: nyabitStore.nyabit)
+                    } catch {
+                        fatalError(error.localizedDescription)
+                    }
+                }
+            }
                 .modelContainer(for: Habit.self, inMemory: true)
+                .task {
+                    do {
+                        try await nyabitStore.load()
+                    } catch {
+                        fatalError(error.localizedDescription)
+                    }
+                }
         }
     }
 }

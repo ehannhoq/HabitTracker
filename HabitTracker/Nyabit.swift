@@ -11,16 +11,28 @@ public enum NyabitType {
     case Cat
 }
 
-public enum Emotion {
-    case Depressed, Sad, Neutral, Happy, Ecstatic
+
+enum Emotion: Codable {
+    case Ecstatic
+    case Happy
+    case Neutral
+    case Sad
+    case Depressed
 }
 
-class Nyabit: ObservableObject {
-    @Published var name: String
-    @Published var emotion: Emotion = .Neutral
+class Nyabit: Codable {
     
-    init(name: String = "NOT SET") {
+    var name: String
+    var emotion: Emotion
+    var timeSinceLastHabitCompleted: Date
+    
+    var isInitialized: Bool
+    
+    init(name: String = "My Nyabit", isInitialized: Bool = false) {
         self.name = name
+        self.emotion = .Neutral
+        timeSinceLastHabitCompleted = Date()
+        self.isInitialized = isInitialized
     }
     
     public func getSymbol() -> String {

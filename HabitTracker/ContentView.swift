@@ -16,40 +16,48 @@ enum Page {
 
 
 struct ContentView: View {
-    @State private var currentPage: Page = .mainPage
-    @StateObject private var nyabit: Nyabit = Nyabit(name: "Carl")
+    @State private var currentPage: Page = .initNyabit
+    
+    @Binding var nyabit: Nyabit
+    @Environment(\.scenePhase) private var scenePhase
+    let saveAction: ()->Void
     
     @Query private var habits: [Habit] = []
     @Environment(\.modelContext) private var context
-
-    private var resolvedPage: Page {
-        nyabit.name == "NOT SET" ? .initNyabit : currentPage
-    }
     
     var body: some View {
         
         ZStack {
-            switch resolvedPage {
-            case .mainPage:
-                MainPage(currentPage: $currentPage, nyabit: nyabit, habits: habits, context: context)
-                    .transition(.move(edge: .trailing))
-                
-            case .habitList:
-                HabitList(currentPage: $currentPage, habits: habits, context: context)
-                    .transition(.move(edge: .leading))
-                
-            case .initNyabit:
-                InitializeNyabit(currentPage: $currentPage, nyabit: nyabit)
+            if nyabit.isInitialized {
+                switch currentPage {
+                case .mainPage:
+                    MainPage(currentPage: $currentPage, nyabit: nyabit, habits: habits, context: context)
+                        .transition(.move(edge: .trailing))
+                    
+                case .habitList:
+                    HabitList(currentPage: $currentPage, habits: habits, context: context)
+                        .transition(.move(edge: .leading))
+                    
+                default:
+                    MainPage(currentPage: $currentPage, nyabit: nyabit, habits: habits, context: context)
+                        .transition(.move(edge: .trailing))
+                }
+            } else {
+                InitializeNyabit(currentPage: $currentPage, nyabit: $nyabit)
             }
+
         }
         .animation(.easeInOut, value: currentPage)
+        .onChange(of: scenePhase) {
+            saveAction()
+        }
     }
 }
 
 struct MainPage: View {
     @Binding var currentPage: Page
-    @ObservedObject var nyabit: Nyabit
-
+    
+    var nyabit: Nyabit
     var habits: [Habit]
     var context: ModelContext
 
@@ -176,7 +184,13 @@ struct HabitList: View {
                                 
                                 TextField("My Nyabit", text: Binding (
                                     get: { habit.name },
-                                    set: { habit.name = $0 }
+                                    set: {
+                                        var name = $0
+                                        if name == "" {
+                                            name = "My Nyabit"
+                                        }
+                                        habit.name = name
+                                    }
                                 ))
                                 .textFieldStyle(RoundedBorderTextFieldStyle())
                                 .frame(width: 105)
@@ -186,7 +200,10 @@ struct HabitList: View {
                                 TextField("Frequency", text: Binding (
                                     get: { String(habit.frequency) },
                                     set: {
-                                        let value = Int($0) ?? 0
+                                        var value = Int($0) ?? 1
+                                        if value < 1 {
+                                            value = 1
+                                        }
                                         habit.frequency = value
                                         habit.updateHabit()
                                     }
@@ -241,8 +258,8 @@ struct HabitList: View {
 
 struct InitializeNyabit: View {
     @Binding var currentPage: Page
-    @ObservedObject var nyabit: Nyabit
     @State private var inputedName: String = ""
+    @Binding var nyabit: Nyabit
     
     var body: some View {
         VStack {
@@ -256,8 +273,10 @@ struct InitializeNyabit: View {
                 .textFieldStyle(.roundedBorder)
                 .frame(maxWidth: 150)
             
-            Button(action: {
+            Button(action: {    
                 nyabit.name = inputedName
+                nyabit.isInitialized = true
+                currentPage = .mainPage
             }) {
                 Text("Save")
             }
@@ -365,7 +384,9 @@ struct MainPageHabits: View  {
 }
 
 
-#Preview {
-    ContentView()
-        .modelContainer(for: Habit.self, inMemory: true)
+struct ContentView_Previews: PreviewProvider {
+    static var previews: some View {
+        @State var previewNyabit: Nyabit = .init()
+        ContentView(nyabit: $previewNyabit, saveAction: {})
+    }
 }
