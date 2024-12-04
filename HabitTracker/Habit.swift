@@ -24,9 +24,9 @@ class Habit: Identifiable {
         self.completedBools = Array(repeating: false, count: frequency)
     }
     
-    func toggleCompletion(forIndex index: Int)
-    {
+    func toggleCompletion(forIndex index: Int) -> Bool {
         completedBools[index].toggle()
+        return completedBools[index]
     }
     
     func updateHabit() {

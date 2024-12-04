@@ -15,8 +15,10 @@ enum Page {
 }
 
 
+
 struct ContentView: View {
-    @State private var currentPage: Page = .initNyabit
+    @State private var currentPage: Page = .habitList
+    @State private var todaysDate: Date = Date()
     
     @Binding var nyabit: Nyabit
     @Environment(\.scenePhase) private var scenePhase
@@ -31,7 +33,7 @@ struct ContentView: View {
             if nyabit.isInitialized {
                 switch currentPage {
                 case .mainPage:
-                    MainPage(currentPage: $currentPage, nyabit: nyabit, habits: habits, context: context)
+                    MainPage(currentPage: $currentPage, nyabit: $nyabit, habits: habits, context: context)
                         .transition(.move(edge: .trailing))
                     
                 case .habitList:
@@ -39,11 +41,12 @@ struct ContentView: View {
                         .transition(.move(edge: .leading))
                     
                 default:
-                    MainPage(currentPage: $currentPage, nyabit: nyabit, habits: habits, context: context)
+                    MainPage(currentPage: $currentPage, nyabit: $nyabit, habits: habits, context: context)
                         .transition(.move(edge: .trailing))
                 }
             } else {
                 InitializeNyabit(currentPage: $currentPage, nyabit: $nyabit)
+                    .transition(.move(edge: .leading))
             }
 
         }
@@ -56,69 +59,85 @@ struct ContentView: View {
 
 struct MainPage: View {
     @Binding var currentPage: Page
+    @Binding var nyabit: Nyabit
     
-    var nyabit: Nyabit
     var habits: [Habit]
     var context: ModelContext
 
     var body: some View {
-        VStack {
-            HStack {
-                Button(action: {
-                    currentPage = .habitList
-                }) {
-                    Text("My Nyabits")
-                        .foregroundStyle(.blue)
-                }
-                .bold()
-                Spacer()
-            }
-            .padding(32)
+        ZStack {
             
-            ScrollView {
-                VStack (alignment: .center) {
-         
-                    
-                    GeometryReader { geometry in
-                        TextField("", text: Binding(
-                            get: { nyabit.name },
-                            set: {
-                                var name = $0
-                                if name == "" {
-                                    name = "Nyabit"
+            Rectangle()
+                .foregroundStyle(
+                    LinearGradient(
+                        gradient: Gradient(colors: [
+                            Color(red: 1, green: 0.9, blue: 0.6),
+                            Color(red: 0.8, green: 0.7, blue: 0.4)
+                        ]),
+                        startPoint: .top,
+                        endPoint: .bottom
+                    ))
+                .ignoresSafeArea()
+            
+            VStack {
+                HStack {
+                    Button(action: {
+                        currentPage = .habitList
+                    }) {
+                        Text("My Nyabits")
+                            .foregroundStyle(.blue)
+                    }
+                    .bold()
+                    Spacer()
+                }
+                .padding(32)
+                
+                ScrollView {
+                    VStack (alignment: .center) {
+                        
+                        
+                        GeometryReader { geometry in
+                            TextField("", text: Binding(
+                                get: { nyabit.name },
+                                set: {
+                                    var name = $0
+                                    if name == "" {
+                                        name = "Nyabit"
+                                    }
+                                    nyabit.name = name
                                 }
-                                nyabit.name = name
-                            }
-                        ))
+                            ))
                             .padding(.top, 140)
-                            .font(.system(size: 28))
+                            .font(.system(size: 28, weight: .black, design: .rounded))
+                            .foregroundStyle(.white)
                             .frame(width: geometry.size.width)
                             .multilineTextAlignment(.center)
+                        }
+                        .frame(height: 170)
+                        
+                        
+                        nyabit.getEmotion()
+                            .font(.system(size: 20, weight: .medium, design: .monospaced))
+                            .padding(.bottom, 32)
+                        
+                        
+                        Text(nyabit.getSymbol())
+                            .font(.system(size: 100))
+                        Spacer()
+                        Spacer()
+                        
                     }
-                    .frame(height: 170)
-             
+                    .padding(.horizontal, 32)
+                    .padding(.top, 32)
+                    .padding(.bottom, 330)
+                    .navigationTitle("Main Page")
+                    .navigationBarHidden(true)
                     
-                    nyabit.getEmotion()
-                        .font(.system(size: 20))
-                        .padding(.bottom, 32)
+                    MainPageHabits(nyabit: $nyabit, habits: habits)
                     
-                    Text(nyabit.getSymbol())
-                        .font(.system(size: 100))
-                    Spacer()
-                    Spacer()
-        
                 }
-                .padding(.horizontal, 32)
-                .padding(.top, 32)
-                .padding(.bottom, 330)
-                .navigationTitle("Main Page")
-                .navigationBarHidden(true)
-                
-                MainPageHabits(habits: habits)
-                
+                .defaultScrollAnchor(.top)
             }
-            .defaultScrollAnchor(.top)
-            
         }
         
     }
@@ -126,132 +145,222 @@ struct MainPage: View {
 
 struct HabitList: View {
     @Binding var currentPage: Page
-    @State private var isEditing: Bool = false
     
     var habits: [Habit]
     var context: ModelContext
-    
-    var editText: String {
-        isEditing ? "Done" : "Edit"
-    }
+
+    @State private var isPresentingHabit: Bool = false
+    @State private var selectedHabit: Habit = Habit()
     
     var body: some View {
-        VStack {
-            HStack {
-                Button(action: {
-                    isEditing.toggle()
-                }) {
-                    Text(editText)
-                }
-                .animation(.easeInOut, value: isEditing)
-                Spacer()
-                Button(action: {
-                    currentPage = .mainPage
-                }) {
-                    Text("Back")
-                        .foregroundStyle(.gray)
-                }
-                
-            }
-            .padding(32)
-            
-            
-            if (!habits.isEmpty) {
-                HStack (alignment: .center) {
-                    Text("Name")
+        ZStack {
+            Rectangle()
+                .foregroundStyle(
+                    LinearGradient(
+                        gradient: Gradient(colors: [
+                            Color(red: 1, green: 0.9, blue: 0.6),
+                            Color(red: 0.8, green: 0.7, blue: 0.4)
+                        ]),
+                        startPoint: .top,
+                        endPoint: .bottom
+                    ))
+                .ignoresSafeArea()
+            VStack {
+                HStack {
                     Spacer()
-                    Text("Frequency")
-                    Spacer()
-                    Text("Daily/Weekly")
-                }
-                
-                .padding(.horizontal, 32)
-                .padding(.bottom, 16)
-                ScrollView {
-                    VStack (alignment: .center, spacing: 32) {
-                        ForEach (Array(habits.indices), id: \.self) { i in
-                            let habit = habits[i]
-                            HStack {
-                                
-                                if isEditing {
-                                    Button(action: {
-                                        context.delete(habit)
-                                    }) {
-                                        Image(systemName: "trash")
-                                            .foregroundStyle(.red)
-                                    }
-                                }
-                                
-                                TextField("My Nyabit", text: Binding (
-                                    get: { habit.name },
-                                    set: {
-                                        var name = $0
-                                        if name == "" {
-                                            name = "My Nyabit"
-                                        }
-                                        habit.name = name
-                                    }
-                                ))
-                                .textFieldStyle(RoundedBorderTextFieldStyle())
-                                .frame(width: 105)
-
-                                Spacer()
-                                
-                                TextField("Frequency", text: Binding (
-                                    get: { String(habit.frequency) },
-                                    set: {
-                                        var value = Int($0) ?? 1
-                                        if value < 1 {
-                                            value = 1
-                                        }
-                                        habit.frequency = value
-                                        habit.updateHabit()
-                                    }
-                                ))
-                                .frame(width:30)
-                                .textFieldStyle(RoundedBorderTextFieldStyle())
-                                .multilineTextAlignment(.center)
-                                
-                                Spacer()
-                                
-                                Picker(habit.frequencyType, selection: Binding (
-                                    get: { habit.frequencyType},
-                                    set: { habit.frequencyType = $0}
-                                )) {
-                                    Text("Daily").tag("daily")
-                                    Text("Weekly").tag("weekly")
-                                }
-                                .frame(width: 100)
+                    Button(action: {
+                        currentPage = .mainPage
+                        
+                        if !habits.isEmpty {
+                            for habit in habits {
+                                habit.updateHabit()
                             }
-                            .padding(.horizontal, 32)
+                        }
+                                       
+                    }) {
+                        Text("Back")
+                            .foregroundStyle(.gray)
+                    }
+                    
+                }
+                .padding(32)
+                
+                
+                if (!habits.isEmpty) {
+                    ScrollView {
+                        LazyVStack (alignment: .center, spacing: 32) {
+                            ForEach (Array(habits.indices), id: \.self) { i in
+                                let habit = habits[i]
+                                Button(action: {
+                                    selectedHabit = habit
+                                    isPresentingHabit = true
+                                }) {
+                                    RoundedRectangle(cornerRadius: 10, style: RoundedCornerStyle.continuous)
+                                    
+                                        .frame(width: 350, height: 100)
+                                        .foregroundStyle(
+                                            LinearGradient(gradient: Gradient(colors: [
+                                                Color(red: 0.9, green: 0.8, blue: 0.7),
+                                                Color(red: 0.85, green: 0.75, blue: 0.65)
+                                            ]),
+                                            startPoint: .topLeading,
+                                            endPoint: .bottomTrailing
+                                        ))
+                                        .overlay(alignment: .center, content: {
+                                            RoundedRectangle(cornerRadius: 10, style: RoundedCornerStyle.continuous)
+                                                .stroke(Color.black.opacity(0.1), lineWidth: 10)
+                                        })
+                                    
+                                        .overlay(alignment: .leading, content: {
+                                            HStack{
+                                                Text(habit.name)
+                                                    .foregroundStyle(.white)
+                                                    .font(.system(size: 20, weight: .black, design: .rounded))
+                                                    .bold()
+                                                    .padding(16)
+                                                Spacer()
+                                                Text("\(habit.frequencyType.capitalized) Habit")
+                                                    .foregroundStyle(.white)
+                                                    .padding(16)
+                                            }
+                                        })
+                                        
+                                }
+                            }
                         }
                     }
-                    .navigationTitle("Habits")
-                    .navigationBarHidden(true)
+                
+                } else {
+                    VStack {
+                        Spacer()
+                        Text("You have no nyabits yet!")
+                            .font(.system(size: 20, weight: .regular, design: .monospaced))
+                            .foregroundStyle(.white)
+                        Spacer()
+                    }
                 }
                 
-   
-                
-            } else {
-                VStack {
+                HStack {
                     Spacer()
-                    Text("You have no nyabits yet!")
-                    Spacer()
+                    Button(action: {
+                        let newHabit = Habit()
+                        context.insert(newHabit)
+                    }) {
+                        Image(systemName: "plus")
+                            .imageScale(.large)
+                    }
                 }
+                .padding(.horizontal, 48)
+                .padding(.vertical, 24)
+                
+                .sheet(
+                    isPresented: $isPresentingHabit,
+                    content: {
+                        ZStack {
+                            Rectangle()
+                                .frame(width: .infinity, height: .infinity)
+                                .foregroundStyle(
+                                    LinearGradient(
+                                        gradient: Gradient(colors: [
+                                            Color(red: 0.9, green: 0.8, blue: 0.7),
+                                            Color(red: 0.85, green: 0.75, blue: 0.65)
+                                        ]),
+                                        startPoint: .top,
+                                        endPoint: .bottom
+                                ))
+                                .ignoresSafeArea()
+                            
+                            VStack {
+                                DetailedHabitMenu(habit: $selectedHabit, context: context)
+                                    .presentationDetents([.medium])
+                                    .presentationDragIndicator(.visible)
+                                
+                                Button(action: {
+                                    context.delete(selectedHabit)
+                                    isPresentingHabit = false
+                                }) {
+                                    Image(systemName: "trash")
+                                        .foregroundStyle(.red)
+                                }
+                            }
+                        }
+                })
             }
-             
-            HStack {
+            
+        }
+
+    }
+}
+
+struct DetailedHabitMenu : View {
+    @Binding var habit: Habit
+    
+    let frequencyRange = Array(1...100)
+    var context: ModelContext
+    
+    @State private var chosenFrequency: Int?
+    
+    var body: some View {
+        
+        ZStack {
+            VStack (alignment: .center) {
+                
+                GeometryReader { geometry in
+                    TextField("My Nyabit✏️", text: Binding (
+                        get: { habit.name },
+                        set: {
+                            var name = $0
+                            if name == "" {
+                                name = "My Nyabit✏️"
+                            }
+                            habit.name = name
+                        }
+                    ))
+                    .padding(.top, 20)
+                    .font(.system(size: 28, weight: .black, design: .rounded))
+                    .foregroundStyle(.white)
+                    .frame(width: geometry.size.width)
+                    .multilineTextAlignment(.center)
+                }
+                .frame(height: 40)
+                
                 Spacer()
-                Button(action: {
-                    let newHabit = Habit()
-                    context.insert(newHabit)
-                }) {
-                    Image(systemName: "plus")
-                        .imageScale(.large)
+                
+                HStack {
+                    Text("Frequency:")
+                        .font(.system(size: 16, weight: .semibold, design: .rounded))
+                        .foregroundStyle(.white)
+                    
+                    
+                    Picker("Frequency", selection: $habit.frequency) {
+                        ForEach(frequencyRange, id: \.self) { num in
+                            Text("\(num)").tag(num)
+                        }
+                    }
+                    .pickerStyle(WheelPickerStyle())
+                    .foregroundStyle(.white)
+                    
                 }
+                
+                Spacer()
+                
+                Picker(habit.frequencyType, selection: Binding (
+                    get: { habit.frequencyType},
+                    set: { habit.frequencyType = $0}
+                )) {
+                    Text("Daily")
+                        .font(.system(size: 20, weight: .bold, design: .rounded))
+                        .tag("daily")
+                    Text("Weekly")
+                        .font(.system(size: 20, weight: .bold, design: .rounded))
+                        .tag("weekly")
+                }
+                .frame(width:. infinity)
+                .pickerStyle(SegmentedPickerStyle())
+                .backgroundStyle(Color(red: 0.85, green: 0.75, blue: 0.65))
+                Spacer()
             }
-            .padding(.horizontal, 48)
-            .padding(.vertical, 24)
+            .padding(32)
         }
     }
 }
@@ -289,6 +398,7 @@ struct InitializeNyabit: View {
 
 struct MainPageHabits: View  {
     
+    @Binding var nyabit: Nyabit
     var habits: [Habit]
     
     var body: some View {
@@ -303,37 +413,66 @@ struct MainPageHabits: View  {
         
         VStack(alignment: .leading, spacing: 16) {
             Text("Today")
-                .font(.title)
+                .font(.system(size: 28, weight: .black, design: .rounded))
+                .foregroundStyle(.white)
+            
             
             if (!dailyTasks.isEmpty) {
                 ForEach (dailyTasks) { habit in
-                    HStack {
-                        Text(habit.name)
-                            .font(.title2)
-                        Spacer()
-                        
-                        LazyVGrid(columns: Array(repeating: GridItem(.fixed(24)), count: maxBoolsPerRow),
-                                  spacing: 16
-                        ) {
-                            ForEach (habit.completedBools.indices, id: \.self) { i in
-                                Button(action: {
-                                    habit.toggleCompletion(forIndex: i)
-                                }) {
-                                    Circle()
-                                        .fill(habit.completedBools[i] ? Color.green : Color.gray)
-                                        .frame(width: 20, height: 20)
-                                        .animation(.easeInOut, value: habit.completedBools[i])
+                    ZStack {
+                        RoundedRectangle(cornerRadius: 10, style: RoundedCornerStyle.continuous)
+                            .foregroundStyle(
+                                LinearGradient(
+                                    colors: [
+                                        Color(red: 0.9, green: 0.8, blue: 0.5),
+                                        Color(red: 0.85, green: 0.75, blue: 0.45)
+                                    ],
+                                    startPoint: .top,
+                                    endPoint: .bottom
+                                )
+                            )
+                            .overlay(content: {
+                                RoundedRectangle(cornerRadius: 10, style: RoundedCornerStyle.continuous)
+                                    .stroke(Color.white.opacity(0.1), lineWidth: 3)
+                            })
+                        HStack {
+                                Text(habit.name)
+                                    .font(.system(size: 20, weight: .regular, design: .monospaced))
+                                    .foregroundStyle(.white)
+                                    .italic()
+                            
+                                Spacer()
+                                
+                                LazyVGrid(columns: Array(repeating: GridItem(.fixed(24)), count: maxBoolsPerRow),
+                                          spacing: 16
+                                ) {
+                                    ForEach (habit.completedBools.indices, id: \.self) { i in
+                                        Button(action: {
+                                            let bool = habit.toggleCompletion(forIndex: i)
+                                            
+                                            if bool {
+                                                nyabit.numHabitsCompletedToday += 1
+                                                nyabit.setDate()
+                                            } else {
+                                                nyabit.numHabitsCompletedToday -= 1
+                                            }
+                                        }) {
+                                            Image(systemName: habit.completedBools[i] ? "checkmark.circle.fill" : "circle")
+                                                .foregroundStyle(habit.completedBools[i] ? .green : .gray)
+                                                .animation(.easeInOut, value: habit.completedBools[i])
+                                        }
+                                    }
+                                    Spacer()
                                 }
-                            }
-                            Spacer()
                         }
-                        
+                        .padding(8)
                     }
                 }
             } else {
                 HStack {
                     Text("You have no daily Nyabits.")
-                        .font(.subheadline)
+                        .font(.system(size: 16, weight: .regular, design: .monospaced))
+                        .foregroundStyle(.white)
                     Spacer()
                 }
             }
@@ -343,37 +482,57 @@ struct MainPageHabits: View  {
         
         VStack(alignment: .leading, spacing: 16) {
             Text("This Week")
-                .font(.title)
+                .font(.system(size: 28, weight: .black, design: .rounded))
+                .foregroundStyle(.white)
             
             if (!weeklyTasks.isEmpty) {
                 ForEach (weeklyTasks) { habit in
-                    HStack {
-                        Text(habit.name)
-                            .font(.title2)
-                        Spacer()
-                        
-                        LazyVGrid(columns: Array(repeating: GridItem(.fixed(24)), count: maxBoolsPerRow),
-                                  spacing: 16
-                        ) {
-                            ForEach (habit.completedBools.indices, id: \.self) { i in
-                                Button(action: {
-                                    habit.toggleCompletion(forIndex: i)
-                                }) {
-                                    Circle()
-                                        .fill(habit.completedBools[i] ? Color.green : Color.gray)
-                                        .frame(width: 20, height: 20)
-                                        .animation(.easeInOut, value: habit.completedBools[i])
-                                }
-                            }
+                    ZStack {
+                        RoundedRectangle(cornerRadius: 10, style: RoundedCornerStyle.continuous)
+                            .foregroundStyle(
+                                LinearGradient(
+                                    colors: [
+                                        Color(red: 0.9, green: 0.8, blue: 0.5),
+                                        Color(red: 0.85, green: 0.75, blue: 0.45)
+                                    ],
+                                    startPoint: .top,
+                                    endPoint: .bottom
+                                )
+                            )
+                            .overlay(content: {
+                                RoundedRectangle(cornerRadius: 10, style: RoundedCornerStyle.continuous)
+                                    .stroke(Color.white.opacity(0.1), lineWidth: 3)
+                            })
+                        HStack {
+                            Text(habit.name)
+                                .font(.system(size: 20, weight: .regular, design: .monospaced))
+                                .foregroundStyle(.white)
+                                .italic()
                             Spacer()
+                            
+                            LazyVGrid(columns: Array(repeating: GridItem(.fixed(24)), count: maxBoolsPerRow),
+                                      spacing: 16
+                            ) {
+                                ForEach (habit.completedBools.indices, id: \.self) { i in
+                                    Button(action: {
+                                        let _ = habit.toggleCompletion(forIndex: i)
+                                    }) {
+                                        Image(systemName: habit.completedBools[i] ? "checkmark.circle.fill" : "circle")
+                                            .foregroundStyle(habit.completedBools[i] ? .green : .gray)
+                                            .animation(.easeInOut, value: habit.completedBools[i])
+                                    }
+                                }
+                                Spacer()
+                            }
                         }
-                        
+                        .padding(8)
                     }
                 }
             } else {
                 HStack {
                     Text("You have no weekly Nyabits.")
-                        .font(.subheadline)
+                        .font(.system(size: 16, weight: .regular, design: .monospaced))
+                        .foregroundStyle(.white)
                     Spacer()
                 }
             }
@@ -386,7 +545,8 @@ struct MainPageHabits: View  {
 
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
-        @State var previewNyabit: Nyabit = .init()
+        @State var previewNyabit: Nyabit = .init(name: "test", isInitialized: true)
         ContentView(nyabit: $previewNyabit, saveAction: {})
+            .modelContainer(for: Habit.self)
     }
 }

@@ -27,6 +27,7 @@
 		A5157DCF2CF530AB00B9AC4F /* csfair2024.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = csfair2024.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A5157DDF2CF530AC00B9AC4F /* csfair2024Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = csfair2024Tests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		A5157DE92CF530AC00B9AC4F /* csfair2024UITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = csfair2024UITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		A5B3FFC92D00324A00E096DC /* csfair2024-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "csfair2024-Info.plist"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -65,6 +66,7 @@
 		A5157DC62CF530AB00B9AC4F = {
 			isa = PBXGroup;
 			children = (
+				A5B3FFC92D00324A00E096DC /* csfair2024-Info.plist */,
 				A5157DD12CF530AB00B9AC4F /* HabitTracker */,
 				A5157DD02CF530AB00B9AC4F /* Products */,
 			);
@@ -380,8 +382,8 @@
 				DEVELOPMENT_ASSET_PATHS = "\"HabitTracker/Preview Content\"";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "csfair2024-Info.plist";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
-				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
@@ -408,8 +410,8 @@
 				DEVELOPMENT_ASSET_PATHS = "\"HabitTracker/Preview Content\"";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "csfair2024-Info.plist";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
-				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;

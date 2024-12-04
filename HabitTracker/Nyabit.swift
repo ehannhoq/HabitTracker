@@ -24,16 +24,30 @@ class Nyabit: Codable {
     
     var name: String
     var emotion: Emotion
+    
+    private var _timeSinceLastHabitCompleted: Date
     var timeSinceLastHabitCompleted: Date
+    var numHabitsCompletedToday: Int
     
     var isInitialized: Bool
     
     init(name: String = "My Nyabit", isInitialized: Bool = false) {
         self.name = name
         self.emotion = .Neutral
+        _timeSinceLastHabitCompleted = Date()
         timeSinceLastHabitCompleted = Date()
         self.isInitialized = isInitialized
+        self.numHabitsCompletedToday = 0
     }
+    
+    public func setDate() {
+        timeSinceLastHabitCompleted = Date.now
+    }
+    
+    public func revertDate() {
+        
+    }
+
     
     public func getSymbol() -> String {
         return "🐈"
