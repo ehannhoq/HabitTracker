@@ -421,25 +421,13 @@ struct MainPageHabits: View  {
                 ForEach (dailyTasks) { habit in
                     ZStack {
                         RoundedRectangle(cornerRadius: 10, style: RoundedCornerStyle.continuous)
-                            .foregroundStyle(
-                                LinearGradient(
-                                    colors: [
-                                        Color(red: 0.9, green: 0.8, blue: 0.5),
-                                        Color(red: 0.85, green: 0.75, blue: 0.45)
-                                    ],
-                                    startPoint: .top,
-                                    endPoint: .bottom
-                                )
-                            )
-                            .overlay(content: {
-                                RoundedRectangle(cornerRadius: 10, style: RoundedCornerStyle.continuous)
-                                    .stroke(Color.white.opacity(0.1), lineWidth: 3)
-                            })
+                            .foregroundStyle(.white)
+                            .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: 0)
                         HStack {
                                 Text(habit.name)
-                                    .font(.system(size: 20, weight: .regular, design: .monospaced))
-                                    .foregroundStyle(.white)
-                                    .italic()
+                                .font(.system(size: 20, weight: .semibold, design: .monospaced))
+                                    .foregroundStyle(.gray)
+                                    .shadow(color: Color.white, radius: 5, x: 0, y: 0)
                             
                                 Spacer()
                                 
@@ -465,7 +453,7 @@ struct MainPageHabits: View  {
                                     Spacer()
                                 }
                         }
-                        .padding(8)
+                        .padding(16)
                     }
                 }
             } else {
@@ -489,43 +477,39 @@ struct MainPageHabits: View  {
                 ForEach (weeklyTasks) { habit in
                     ZStack {
                         RoundedRectangle(cornerRadius: 10, style: RoundedCornerStyle.continuous)
-                            .foregroundStyle(
-                                LinearGradient(
-                                    colors: [
-                                        Color(red: 0.9, green: 0.8, blue: 0.5),
-                                        Color(red: 0.85, green: 0.75, blue: 0.45)
-                                    ],
-                                    startPoint: .top,
-                                    endPoint: .bottom
-                                )
-                            )
-                            .overlay(content: {
-                                RoundedRectangle(cornerRadius: 10, style: RoundedCornerStyle.continuous)
-                                    .stroke(Color.white.opacity(0.1), lineWidth: 3)
-                            })
+                            .foregroundStyle(.white)
+                            .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: 0)
                         HStack {
-                            Text(habit.name)
-                                .font(.system(size: 20, weight: .regular, design: .monospaced))
-                                .foregroundStyle(.white)
-                                .italic()
-                            Spacer()
+                                Text(habit.name)
+                                .font(.system(size: 20, weight: .semibold, design: .monospaced))
+                                    .foregroundStyle(.gray)
+                                    .shadow(color: Color.white, radius: 5, x: 0, y: 0)
                             
-                            LazyVGrid(columns: Array(repeating: GridItem(.fixed(24)), count: maxBoolsPerRow),
-                                      spacing: 16
-                            ) {
-                                ForEach (habit.completedBools.indices, id: \.self) { i in
-                                    Button(action: {
-                                        let _ = habit.toggleCompletion(forIndex: i)
-                                    }) {
-                                        Image(systemName: habit.completedBools[i] ? "checkmark.circle.fill" : "circle")
-                                            .foregroundStyle(habit.completedBools[i] ? .green : .gray)
-                                            .animation(.easeInOut, value: habit.completedBools[i])
-                                    }
-                                }
                                 Spacer()
-                            }
+                                
+                                LazyVGrid(columns: Array(repeating: GridItem(.fixed(24)), count: maxBoolsPerRow),
+                                          spacing: 16
+                                ) {
+                                    ForEach (habit.completedBools.indices, id: \.self) { i in
+                                        Button(action: {
+                                            let bool = habit.toggleCompletion(forIndex: i)
+                                            
+                                            if bool {
+                                                nyabit.numHabitsCompletedToday += 1
+                                                nyabit.setDate()
+                                            } else {
+                                                nyabit.numHabitsCompletedToday -= 1
+                                            }
+                                        }) {
+                                            Image(systemName: habit.completedBools[i] ? "checkmark.circle.fill" : "circle")
+                                                .foregroundStyle(habit.completedBools[i] ? .green : .gray)
+                                                .animation(.easeInOut, value: habit.completedBools[i])
+                                        }
+                                    }
+                                    Spacer()
+                                }
                         }
-                        .padding(8)
+                        .padding(16)
                     }
                 }
             } else {
