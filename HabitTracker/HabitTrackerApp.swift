@@ -14,7 +14,7 @@ struct HabitTrackerApp: App {
     
     var body: some Scene {
         WindowGroup {
-            ContentView(nyabit: $nyabitStore.nyabit) {
+            ContentView(nyabit: nyabitStore.nyabit) {
                 Task {
                     do {
                         try await nyabitStore.save(nyabit: nyabitStore.nyabit)
@@ -27,14 +27,13 @@ struct HabitTrackerApp: App {
                 .task {
                     do {
                         try await nyabitStore.load()
+                        
                     } catch {
                         fatalError(error.localizedDescription)
                     }
                 }
         }
     }
-    
-    
 }
 
 extension Array {

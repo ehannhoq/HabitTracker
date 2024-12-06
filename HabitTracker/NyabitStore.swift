@@ -31,6 +31,9 @@ class NyabitStore: ObservableObject {
         }
         let nyabit = try await task.value
         self.nyabit = nyabit
+        
+        resetValuesIfNeeded()
+        
     }
     
     func save(nyabit: Nyabit) async throws {
@@ -41,5 +44,21 @@ class NyabitStore: ObservableObject {
         }
         _ = try await task.value
         
+    }
+    
+    func resetValuesIfNeeded() {
+        let calender = Calendar.current
+        let now = Date()
+        
+        if !calender.isDate(nyabit.lastCompletedHabit, inSameDayAs: now) {
+            nyabit.dailyHabitsCompleted = 0
+        }
+        
+        let lastWeek = calender.component(.weekOfYear, from: nyabit.lastCompletedHabit)
+        let currentWeek = calender.component(.weekOfYear, from: now)
+        
+        if currentWeek != lastWeek {
+            nyabit.weeklyHabitsCompleted = 0
+        }
     }
 }
